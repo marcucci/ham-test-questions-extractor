@@ -1,9 +1,9 @@
 const fs = require('fs');
 
-const dataPath = './ham_test_extractor/data/';
+const dataPath = './data/';
 const questionFilename = 'Technician Pool and Syllabus 2022-2026 Public Release Errata March 7 2022.txt';
 const inputFile = dataPath + questionFilename;
-const outputFile = dataPath + 'flashcards_' + questionFilename;
+const outputFile = dataPath + 'mnemosyne_flashcards_import_' + questionFilename;
 
 // Read the input file
 const questionFile = fs.readFileSync(inputFile, 'utf8',);
