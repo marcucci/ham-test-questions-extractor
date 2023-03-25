@@ -1,49 +1,69 @@
+"use strict";
+
 const fs = require('fs');
+const readline = require('readline');
+
 
 const dataPath = './data/';
 const questionFilename = 'Technician Pool and Syllabus 2022-2026 Public Release Errata March 7 2022.txt';
 const inputFile = dataPath + questionFilename;
-const outputFile = dataPath + 'mnemosyne_flashcards_import_' + questionFilename;
+const outputFile = dataPath + `mnemosyne_flashcards_import_${questionFilename}`;
 
-// Read the input file
-const questionFile = fs.readFileSync(inputFile, 'utf8',);
+async function processFile() {
+  const rl = readline.createInterface({
+    input: fs.createReadStream(inputFile),
+    crlfDelay: Infinity
+  });
 
-// Splut the file into lines
-const lines = questionFile.toString().split('\n');
-//var indicator = array();
+  let output = '';
+  let section = new Array;
 
-// Find the first question indicator '~~'
-var marker = lines.indexOf('~~\r');
+  for await (const line of rl) {
+    if (line === ('~~')) {
+      
+      let choicesArray = new Array;
+      let choices = new String;
 
-// initilize output
-var output = '';
+      for (let i = 3; i >= 0; i--) {
+        choicesArray.push(section.pop().trim());
+      }
+      choicesArray.reverse();
+      for (const value of choicesArray) {
+        choices += `${value}<br>`;
+      }
 
-// Find all the questions and answers and add them to output
-while (marker > 0) {
-  
-  const correct_answer = lines[marker-6].match(/\((.)\)/)[1].toString();
-  const question = lines[marker-5].trim()+ '<br>';
-  
-  var choices = '';
-  for (let i=4; i > 0; i--) {
-    choices = choices + lines[marker-i].trim() + '<br>'
+      const question = `${section.pop().trim()}<br>`;
+      const correctAnswer = `${section.pop().trim().match(/\((.)\)/)[1].toString()}`;
+      
+      let answer;
+      switch (correctAnswer) {
+        case 'A':
+          answer = `${choicesArray.at(0)}\r`;
+          break;
+        case 'B':
+          answer = `${choicesArray.at(1)}\r`;
+          break;
+        case 'C':
+          answer = `${choicesArray.at(2)}\r`;
+          break;
+        case 'D':
+          answer = `${choicesArray.at(3)}\r`;
+          break;
+      }
+
+      output += `${question}${choices}\t${answer}`;
+      section = Array.of();
+    } else {
+      section.push(line);
+    }
   }
-  
-  var answer;
-  switch (correct_answer) {
-    case 'A' : answer = lines[marker-4]+'\r'; break;
-    case 'B' : answer = lines[marker-3]+'\r'; break;
-    case 'C' : answer = lines[marker-2]+'\r'; break; 
-    case 'D' : answer = lines[marker-1]+'\r'; break;
-  }
-  output = output + question + choices + '\t' + answer.trim() + '\r';
-  marker = lines.indexOf('~~\r', marker+1);
+
+  fs.writeFile(outputFile, output, (err) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+  });
 }
 
-// write the results to a txt file in Mnemosyne format
-fs.writeFile(outputFile, output.toString(), (err) => {
-  if (err) {
-    console.error(err);
-    return;
-  }
-})
+processFile();
