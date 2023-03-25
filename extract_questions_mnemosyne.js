@@ -35,21 +35,14 @@ async function processFile() {
       const question = `${section.pop().trim()}<br>`;
       const correctAnswer = `${section.pop().trim().match(/\((.)\)/)[1].toString()}`;
       
-      let answer;
-      switch (correctAnswer) {
-        case 'A':
-          answer = `${choicesArray.at(0)}\r`;
-          break;
-        case 'B':
-          answer = `${choicesArray.at(1)}\r`;
-          break;
-        case 'C':
-          answer = `${choicesArray.at(2)}\r`;
-          break;
-        case 'D':
-          answer = `${choicesArray.at(3)}\r`;
-          break;
-      }
+      const answerIndex = {
+        A: 0,
+        B: 1,
+        C: 2,
+        D: 3
+      }[correctAnswer];
+
+      const answer = `${choicesArray[answerIndex]}\r`;
 
       output += `${question}${choices}\t${answer}`;
       section = Array.of();
